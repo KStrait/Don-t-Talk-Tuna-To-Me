@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Don\'t Talk Tuna To Me</string>
+    <string name="channel_name">my_channel_01</string>
+    <string name="channel_description">who knows</string>
+    <string name="empty_desc"> </string>
+    <string name="imdb_base_url">https://api.themoviedb.org/3/search/</string>
+</resources>
