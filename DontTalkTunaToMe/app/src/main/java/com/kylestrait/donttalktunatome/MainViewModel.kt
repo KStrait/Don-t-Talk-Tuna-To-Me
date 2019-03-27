@@ -32,6 +32,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
     var getIsPlaying: MutableLiveData<Boolean> = MutableLiveData()
     var downloadProgress: MutableLiveData<Int> = MutableLiveData()
     var downloading: MutableLiveData<Boolean> = MutableLiveData()
+    var isDownloaded: MutableLiveData<Boolean> = MutableLiveData()
 
     companion object {
         fun create(activity: FragmentActivity, viewModelFactory: ViewModelProvider.Factory): MainViewModel {
@@ -91,6 +92,36 @@ class MainViewModel @Inject constructor() : ViewModel() {
         }
     }
 
+    fun checkIfDownloaded(name: String) {
+        var listFiles = mutableListOf<File>()
+        listFiles.addAll(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).listFiles().toList())
+        for (item in listFiles) {
+            if(item.nameWithoutExtension.equals(name)) {
+                Log.d(TAG, "RIGHT HERE")
+                isDownloaded.value = item.nameWithoutExtension.equals(name)
+                return
+            }else{
+                isDownloaded.value = false
+            }
+        }
+    }
+
+    fun deleteEpisodeFromStorage(title: String){
+        var newTitle: String? =  title.replace("\\s".toRegex(), "")
+        var listFiles = mutableListOf<File>()
+        listFiles.addAll(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).listFiles().toList())
+        for (item in listFiles) {
+            if(item.nameWithoutExtension.equals(newTitle)) {
+                var newFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), newTitle.plus(".mp3"))
+                if(newFile.exists()) {
+                    newFile.delete()
+                    Log.d(TAG, "DELETE")
+                    isDownloaded.value = false
+                }
+            }
+        }
+    }
+
     fun saveToDisk(body: ResponseBody) {
         GlobalScope.launch(Dispatchers.Default) {
             try {
@@ -111,7 +142,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
                     count = `is`.read(data)
 
                     while (count != -1) {
-                        os!!.write(data, 0, count)
+                        os.write(data, 0, count)
                         progress += count
 //                    Log.d(
 //                        TAG,
@@ -122,7 +153,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
                         downloadProgress.postValue(((progress.toFloat() / body.contentLength()) * 100).toInt())
                     }
 
-                    os!!.flush()
+                    os.flush()
                     Log.d(TAG, "File saved successfully!")
 //                    return
                 } catch (e: IOException) {
@@ -135,6 +166,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
 
                     Log.d(TAG, "File saved successfully! 2")
                     downloading.postValue(false)
+                    isDownloaded.postValue(true)
                 }
             } catch (e: IOException) {
                 e.printStackTrace()

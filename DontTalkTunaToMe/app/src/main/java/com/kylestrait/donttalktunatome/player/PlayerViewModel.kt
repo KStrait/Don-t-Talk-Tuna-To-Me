@@ -32,17 +32,15 @@ class PlayerViewModel @Inject constructor() : ViewModel() {
     lateinit var mAudioManager: AudioManager
 
     var imdbFeed: MutableLiveData<Response<Imdb>> = MutableLiveData()
-
     var posterLink: MutableLiveData<String> = MutableLiveData()
-
     var episodeTitle: MutableLiveData<String> = MutableLiveData()
+    var isDownloaded: MutableLiveData<Boolean> = MutableLiveData()
 
     companion object {
         fun create(fragment: Fragment, viewModelFactory: ViewModelProvider.Factory): EpisodesViewModel {
             return ViewModelProviders.of(fragment, viewModelFactory).get(EpisodesViewModel::class.java)
         }
     }
-
 
     fun setAudioManager(context: Context, item: Item?) {
         mAudioManager.setupPlayer(context, item)
@@ -78,7 +76,6 @@ class PlayerViewModel @Inject constructor() : ViewModel() {
 
             if (response.isSuccessful) {
                 Log.d(TAG, "isSuccessful")
-
                 imdbFeed.value = response
 
                 if (response.body()?.total_results!! > 0) {
@@ -102,7 +99,25 @@ class PlayerViewModel @Inject constructor() : ViewModel() {
         var listFiles = mutableListOf<File>()
         listFiles.addAll(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).listFiles().toList())
         for (item in listFiles) {
-            Log.d(TAG, item.name)
+            if(item.nameWithoutExtension.equals(name)) {
+                isDownloaded.value = item.nameWithoutExtension.equals(name)
+            }
+        }
+    }
+
+    fun deleteEpisodeFromStorage(title: String){
+        var newTitle: String? =  title.replace("\\s".toRegex(), "")
+        var listFiles = mutableListOf<File>()
+        listFiles.addAll(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).listFiles().toList())
+        for (item in listFiles) {
+            if(item.nameWithoutExtension.equals(newTitle)) {
+                var newFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), newTitle.plus(".mp3"))
+                if(newFile.exists()) {
+                    newFile.delete()
+                    Log.d(TAG, "DELETE")
+                    isDownloaded.value = false
+                }
+            }
         }
     }
 }

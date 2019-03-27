@@ -82,15 +82,16 @@
         <!--app:layout_constraintBottom_toBottomOf="parent"/>-->
 
 
-        <Button
+        <ImageButton
             android:id="@+id/downloadBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintBottom_toTopOf="@id/player_view"
-            android:onClick="@{(v) -> mainViewModel.downloadCurrentEpisode(myPodcast.enclosure.url)}"
-            android:text="Download"/>
+            android:onClick="@{(v) -> !v.isSelected() ? mainViewModel.downloadCurrentEpisode(myPodcast.enclosure.url) : mainViewModel.deleteEpisodeFromStorage(myPodcast.title)}"
+            android:background="@drawable/btn_selector"
+            android:layout_marginBottom="@dimen/vertical_margin"/>
 
         <ProgressBar
             android:id="@+id/progress"
@@ -100,7 +101,19 @@
             app:layout_constraintTop_toTopOf="@id/downloadBtn"
             app:layout_constraintBottom_toBottomOf="@id/downloadBtn"
             app:layout_constraintRight_toRightOf="parent"
+            android:indeterminateTint="#FFFFFF"
+            android:progress="@{mainViewModel.downloadProgress}"
             android:visibility="@{mainViewModel.downloading ? View.VISIBLE : View.GONE}"/>
+
+        <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--app:layout_constraintTop_toBottomOf="@id/progress"-->
+            <!--app:layout_constraintLeft_toLeftOf="@id/progress"-->
+            <!--app:layout_constraintRight_toRightOf="@id/progress"-->
+            <!--app:layout_constraintBottom_toTopOf="@id/player_view"-->
+            <!--android:text="@{String.valueOf(mainViewModel.downloadProgress)}"-->
+            <!--android:textColor="#FFFFFF"/>-->
 
         <com.google.android.exoplayer2.ui.PlayerControlView
             android:id="@+id/player_view"

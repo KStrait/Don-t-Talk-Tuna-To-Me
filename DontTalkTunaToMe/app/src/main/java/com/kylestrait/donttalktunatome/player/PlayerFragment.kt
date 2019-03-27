@@ -72,7 +72,6 @@ class PlayerFragment @Inject constructor() : DaggerFragment() {
         mMainViewModel?.episode?.observe(viewLifecycleOwner, Observer {
             if (it != null) {
                 mEpisode = it
-                Log.d(TAG, it.title.plus(" : TITLE"))
                 mViewModel?.setAudioManager(activity!!, mEpisode)
                 mBinding?.myPodcast = it
 
@@ -84,6 +83,10 @@ class PlayerFragment @Inject constructor() : DaggerFragment() {
                 if (mEpisode?.title?.contains("(")!!) {
                     mViewModel?.getImdbFeed("", stripChars(mEpisode?.title!!))
                 }
+
+                var title: String? =  mEpisode?.title?.replace("\\s".toRegex(), "")
+                Log.d(TAG, title)
+                mMainViewModel?.checkIfDownloaded(title!!)
             }
         })
 
@@ -99,8 +102,24 @@ class PlayerFragment @Inject constructor() : DaggerFragment() {
             Picasso.get().load("http://image.tmdb.org/t/p/w342/".plus(it)).into(mBinding?.posterImage)
         })
 
-        mMainViewModel?.downloading?.observe(viewLifecycleOwner, Observer {
+        mMainViewModel?.downloadProgress?.observe(viewLifecycleOwner, Observer {
+            if(it != null && it > 0 && it < 100){
+                mBinding?.progress?.visibility = View.VISIBLE
+            }else{
+                mBinding?.progress?.visibility = View.GONE
+            }
+
             Log.d(TAG, it?.toString())
+        })
+
+        mMainViewModel?.isDownloaded?.observe(viewLifecycleOwner, Observer {
+            if (it == true){
+                Log.d(TAG, "is Downloaded")
+                mBinding?.downloadBtn?.isSelected = true
+            }else{
+                Log.d(TAG, "is NOT Downloaded")
+                mBinding?.downloadBtn?.isSelected = false
+            }
         })
     }
 
@@ -110,7 +129,6 @@ class PlayerFragment @Inject constructor() : DaggerFragment() {
 
     override fun onResume() {
         super.onResume()
-
         val startIntent = Intent(activity, MediaService::class.java)
         startIntent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION)
         activity?.startService(startIntent)
