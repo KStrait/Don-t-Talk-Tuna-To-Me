@@ -85,4 +85,8 @@ class MainActivity : DaggerAppCompatActivity() {
             return true
         }
     }
+
+    fun provideMainViewModel(): MainViewModel? {
+        return mViewModel
+    }
 }

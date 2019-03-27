@@ -25,6 +25,7 @@ import com.kylestrait.donttalktunatome.data.Constants
 import com.kylestrait.donttalktunatome.manager.MediaService
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.ui.PlayerControlView
+import com.kylestrait.donttalktunatome.MainActivity
 import com.squareup.picasso.Picasso
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -54,10 +55,12 @@ class PlayerFragment @Inject constructor() : DaggerFragment() {
             mViewModelFactory
         ).get(PlayerViewModel::class.java)
 
-        mMainViewModel = ViewModelProviders.of(
-            activity!!,
-            mViewModelFactory
-        ).get(MainViewModel::class.java)
+//        mMainViewModel = ViewModelProviders.of(
+//            activity!!,
+//            mViewModelFactory
+//        ).get(MainViewModel::class.java)
+
+        mMainViewModel = (activity as MainActivity).provideMainViewModel()
 
         mBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_player, container, false)
         mBinding?.executePendingBindings()
@@ -94,6 +97,10 @@ class PlayerFragment @Inject constructor() : DaggerFragment() {
         mViewModel?.posterLink?.observe(viewLifecycleOwner, Observer {
             Log.d(TAG, it)
             Picasso.get().load("http://image.tmdb.org/t/p/w342/".plus(it)).into(mBinding?.posterImage)
+        })
+
+        mMainViewModel?.downloading?.observe(viewLifecycleOwner, Observer {
+            Log.d(TAG, it?.toString())
         })
     }
 
