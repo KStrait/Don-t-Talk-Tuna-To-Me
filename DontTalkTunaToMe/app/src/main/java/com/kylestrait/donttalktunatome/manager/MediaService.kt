@@ -2,32 +2,30 @@ package com.kylestrait.donttalktunatome.manager
 
 import android.content.Intent
 import android.os.IBinder
-import android.Manifest.permission.FOREGROUND_SERVICE
 import android.app.*
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.content.Context
-import android.os.Build
 import android.support.v4.app.NotificationCompat
+import android.support.v4.media.app.NotificationCompat.MediaStyle
+import android.support.v4.media.session.MediaButtonReceiver
+import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import com.kylestrait.donttalktunatome.MainActivity
 import com.kylestrait.donttalktunatome.R
-import com.kylestrait.donttalktunatome.TunaApplication
 import com.kylestrait.donttalktunatome.data.Constants
-import com.kylestrait.donttalktunatome.di.AppModule
-import com.kylestrait.donttalktunatome.di.DaggerAppComponent
 import dagger.android.AndroidInjection
 import javax.inject.Inject
+import javax.inject.Singleton
 
-
-class MediaService: Service() {
-    private val LOG_TAG = "ForegroundService"
+@Singleton
+class MediaService @Inject constructor(): Service() {
     private val TAG: String? = MediaService::class.simpleName
 
     @Inject
     lateinit var audioManager: AudioManager
 
     override fun onBind(intent: Intent?): IBinder? {
+        Log.d(TAG, "onBind")
 
         return null
     }
@@ -35,12 +33,14 @@ class MediaService: Service() {
     override fun onCreate() {
         AndroidInjection.inject(this)
 
+        Log.d(TAG, "onCreate")
+
         super.onCreate()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action.equals(Constants.ACTION.STARTFOREGROUND_ACTION)) {
-            Log.i(LOG_TAG, "Received Start Foreground Intent ")
+            Log.i(TAG, "Received Start Foreground Intent ")
             val notificationIntent = Intent(this, MainActivity::class.java)
             notificationIntent.action = Constants.ACTION.MAIN_ACTION
             notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -56,44 +56,66 @@ class MediaService: Service() {
                 playIntent, 0
             )
 
+            val stopIntent = Intent(this, MediaService::class.java)
+            stopIntent.action = Constants.ACTION.STOPFOREGROUND_ACTION
+            val pstopintent = PendingIntent.getService(
+                this, 0,
+                stopIntent, 0
+            )
+
             val icon = BitmapFactory.decodeResource(
                 resources,
-                R.drawable.play_icon
+                R.drawable.tuna_icon
             )
 
             val notification = NotificationCompat.Builder(this@MediaService, "some_channel")
                 .setContentTitle(audioManager.mItem?.title)
                 .setTicker(audioManager.mItem?.description)
-                .setContentText("Don't Talk Tuna To Me")
+//                .setContentText("Don't Talk Tuna To Me")
                 .setSmallIcon(R.drawable.play_icon)
                 .setLargeIcon(
                     Bitmap.createScaledBitmap(icon, 128, 128, false)
                 )
                 .setContentIntent(pendingIntent)
-                .setOngoing(true)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .addAction(
-                    android.R.drawable.ic_media_play, "Play",
-                    pplayIntent
-                ).build()
+//                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true)
+                .addAction(android.R.drawable.ic_media_play, "Play", pplayIntent)
+                .addAction(R.drawable.ic_stop, "Stop", pstopintent)
+                .setStyle(MediaStyle().setMediaSession(audioManager.getExoSession().sessionToken))
+                .build()
             startForeground(
                 101,
                 notification
             )
         } else if (intent?.action.equals(Constants.ACTION.PREV_ACTION)) {
-            Log.i(LOG_TAG, "Clicked Previous")
+            Log.i(TAG, "Clicked Previous")
         } else if (intent?.action.equals(Constants.ACTION.PLAY_ACTION)) {
-            Log.i(LOG_TAG, "Clicked Play")
+            Log.i(TAG, "Clicked Play")
             audioManager.playPodcast()
         } else if (intent?.action.equals(Constants.ACTION.NEXT_ACTION)) {
-            Log.i(LOG_TAG, "Clicked Next")
-        } else if (intent?.action.equals(
-                Constants.ACTION.STOPFOREGROUND_ACTION
-            )
-        ) {
-            Log.i(LOG_TAG, "Received Stop Foreground Intent")
-            stopForeground(true)
-            stopSelf()
+            Log.i(TAG, "Clicked Next")
+        } else if (intent?.action.equals(Constants.ACTION.STOPFOREGROUND_ACTION)) {
+            Log.i(TAG, "Received Stop Foreground Intent")
+//            audioManager.shutDown()
+            stopForeground(false)
+//            stopSelf()
         }
-        return Service.START_STICKY    }
+
+        return Service.START_STICKY
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        Log.d(TAG, "onTaskRemoved")
+        super.onTaskRemoved(rootIntent)
+        Log.d(TAG, "onTaskRemoved")
+        audioManager.shutDown()
+        stopSelf()
+        stopForeground(true)
+    }
+
+    fun closeService(){
+//        audioManager.shutDown()
+//        stopForeground(true)
+//        stopSelf()
+    }
 }

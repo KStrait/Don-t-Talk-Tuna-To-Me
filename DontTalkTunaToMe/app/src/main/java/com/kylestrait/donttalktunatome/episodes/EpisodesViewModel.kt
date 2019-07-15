@@ -8,9 +8,13 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentActivity
 import android.util.Log
 import com.kylestrait.donttalktunatome.MainViewModel
+import com.kylestrait.donttalktunatome.data.Item
 import com.kylestrait.donttalktunatome.data.RSS
+import com.kylestrait.donttalktunatome.data.dao.EpisodeDao
 import com.kylestrait.donttalktunatome.di.NetworkModule
 import com.kylestrait.donttalktunatome.manager.AudioManager
+import com.kylestrait.donttalktunatome.repo.AppDatabase
+import com.kylestrait.donttalktunatome.repo.DownloadRepo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -22,10 +26,12 @@ class EpisodesViewModel @Inject constructor(): ViewModel() {
 
     @Inject lateinit var api: NetworkModule
     @Inject lateinit var audioManager: AudioManager
-
+    @Inject lateinit var mDownloadRepo: DownloadRepo
 
     var mainFeed: MutableLiveData<Response<RSS>> = MutableLiveData()
     var isPlaying: MutableLiveData<Boolean> = MutableLiveData()
+
+    var isRefreshing: MutableLiveData<Boolean> = MutableLiveData()
 
     companion object{
         fun create(fragment: Fragment, viewModelFactory: ViewModelProvider.Factory): EpisodesViewModel {
@@ -56,4 +62,8 @@ class EpisodesViewModel @Inject constructor(): ViewModel() {
         }
     }
 
+    fun saveDownloads(episodes: List<Item>){
+//        mDownloadRepo.saveDownloads(episodes)
+//        mDownloadRepo.deleteDownloads(episodes)
+    }
 }

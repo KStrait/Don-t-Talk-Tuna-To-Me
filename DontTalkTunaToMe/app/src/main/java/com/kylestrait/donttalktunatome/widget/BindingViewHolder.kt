@@ -1,4 +1,4 @@
-package com.kylestrait.donttalktunatome.util
+package com.kylestrait.donttalktunatome.widget
 
 import android.databinding.DataBindingUtil
 import android.databinding.ViewDataBinding

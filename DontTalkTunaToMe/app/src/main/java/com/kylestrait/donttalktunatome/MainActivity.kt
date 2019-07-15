@@ -15,6 +15,9 @@ import dagger.android.support.DaggerAppCompatActivity
 import javax.inject.Inject
 import android.support.v4.app.ActivityCompat
 import android.content.pm.PackageManager
+import com.kylestrait.donttalktunatome.manager.MediaService
+import com.kylestrait.donttalktunatome.menu.DownloadsFragment
+import com.kylestrait.donttalktunatome.player.BottomPlayerFragment
 
 class MainActivity : DaggerAppCompatActivity() {
     var TAG: String? = MainActivity::class.simpleName
@@ -25,9 +28,16 @@ class MainActivity : DaggerAppCompatActivity() {
     lateinit var mViewModelFactory: ViewModelProvider.Factory
     private var mViewModel: MainViewModel? = null
 
+    @Inject
+    lateinit var mediaService: MediaService
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        if(null == savedInstanceState){
+            supportFragmentManager.beginTransaction().replace(R.id.container, EpisodesFragment()).commit()
+        }
 
         mViewModel = ViewModelProviders.of(this, mViewModelFactory).get(MainViewModel::class.java)
 
@@ -36,26 +46,43 @@ class MainActivity : DaggerAppCompatActivity() {
         })
 
         mViewModel?.episode?.observe(this, Observer {
-            setFragment(PlayerFragment(), false)
+            setFragment(PlayerFragment(), false, "playerFrag")
+            setBottomFragment(BottomPlayerFragment(), false, "bottomPlayerFrag")
         })
 
         mViewModel?.getMainFeed()
 
-        setFragment(EpisodesFragment(), false)
+        mViewModel?.showDownloads?.observe(this, Observer {
+            if(it == true){
+                setFragment(DownloadsFragment(), false, "downloadsFrag")
+            }
+        })
 
         isStoragePermissionGranted()
     }
 
-    private fun setFragment(frag: Fragment, clear: Boolean) {
+    private fun setFragment(frag: Fragment, clear: Boolean, tag: String) {
         if(clear){
             clearBackStack()
-
             val ft = supportFragmentManager.beginTransaction()
             ft.replace(R.id.container, frag)
             ft.commit()
         }else {
             val ft = supportFragmentManager.beginTransaction()
-            ft.replace(R.id.container, frag).addToBackStack(null)
+            ft.replace(R.id.container, frag).addToBackStack(tag)
+            ft.commit()
+        }
+    }
+
+    private fun setBottomFragment(frag: Fragment, clear: Boolean, tag: String) {
+        if(clear){
+            clearBackStack()
+            val ft = supportFragmentManager.beginTransaction()
+            ft.replace(R.id.bottom_player_container, frag)
+            ft.commit()
+        }else {
+            val ft = supportFragmentManager.beginTransaction()
+            ft.replace(R.id.bottom_player_container, frag)
             ft.commit()
         }
     }
@@ -73,20 +100,29 @@ class MainActivity : DaggerAppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 Log.v(TAG, "Permission is granted")
+                mViewModel?.permission = true
                 return true
             } else {
 
                 Log.v(TAG, "Permission is revoked")
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
+                mViewModel?.permission = false
                 return false
             }
         } else { //permission is automatically granted on sdk<23 upon installation
             Log.v(TAG, "Permission is granted")
+            mViewModel?.permission = true
             return true
         }
     }
 
     fun provideMainViewModel(): MainViewModel? {
         return mViewModel
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        mediaService.closeService()
     }
 }

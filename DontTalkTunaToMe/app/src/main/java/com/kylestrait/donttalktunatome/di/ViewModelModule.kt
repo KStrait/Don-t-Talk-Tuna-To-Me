@@ -4,6 +4,7 @@ import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
 import com.kylestrait.donttalktunatome.MainViewModel
 import com.kylestrait.donttalktunatome.episodes.EpisodesViewModel
+import com.kylestrait.donttalktunatome.menu.DownloadsViewModel
 import com.kylestrait.donttalktunatome.player.PlayerViewModel
 import dagger.Binds
 import dagger.Module
@@ -26,6 +27,11 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(PlayerViewModel::class)
     internal abstract fun bindsPlayerViewModel(playerViewModel: PlayerViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(DownloadsViewModel::class)
+    internal abstract fun bindsDownloadsViewModel(downloadsViewModel: DownloadsViewModel): ViewModel
 
     @Binds
     abstract fun bindsViewModelFactory(viewModelFactory: ViewModelFactory): ViewModelProvider.Factory

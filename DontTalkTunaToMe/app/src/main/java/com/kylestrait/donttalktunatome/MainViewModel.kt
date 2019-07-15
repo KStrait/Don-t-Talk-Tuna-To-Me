@@ -4,10 +4,12 @@ import android.arch.lifecycle.*
 import android.os.Environment
 import android.support.v4.app.FragmentActivity
 import android.util.Log
+import android.widget.Toast
 import com.kylestrait.donttalktunatome.data.Item
 import com.kylestrait.donttalktunatome.data.RSS
 import com.kylestrait.donttalktunatome.di.NetworkModule
 import com.kylestrait.donttalktunatome.manager.AudioManager
+import com.kylestrait.donttalktunatome.repo.DownloadRepo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -26,6 +28,9 @@ class MainViewModel @Inject constructor() : ViewModel() {
     @Inject
     lateinit var mAudioManager: AudioManager
 
+    @Inject
+    lateinit var downloadRepo: DownloadRepo
+
     var mainFeed: MutableLiveData<Response<RSS>> = MutableLiveData()
     var episode: MutableLiveData<Item> = MutableLiveData()
     var epTitle: String? = null
@@ -33,6 +38,10 @@ class MainViewModel @Inject constructor() : ViewModel() {
     var downloadProgress: MutableLiveData<Int> = MutableLiveData()
     var downloading: MutableLiveData<Boolean> = MutableLiveData()
     var isDownloaded: MutableLiveData<Boolean> = MutableLiveData()
+    var deleteDownload: MutableLiveData<Boolean> = MutableLiveData()
+    var isRefreshing: MutableLiveData<Boolean> = MutableLiveData()
+    var showDownloads: MutableLiveData<Boolean> = MutableLiveData()
+    var permission: Boolean = false
 
     companion object {
         fun create(activity: FragmentActivity, viewModelFactory: ViewModelProvider.Factory): MainViewModel {
@@ -44,13 +53,30 @@ class MainViewModel @Inject constructor() : ViewModel() {
         GlobalScope.launch(Dispatchers.Main) {
             val request = api.getRssFeed()
             val response = request.await()
-
             if (response.isSuccessful) {
                 Log.d(TAG, "isSuccessful")
-
                 mainFeed.value = response
+                isRefreshing.postValue(false)
             } else {
                 Log.d(TAG, "not successful")
+                isRefreshing.postValue(false)
+            }
+        }
+    }
+
+    fun reloadFeed() {
+        isRefreshing.value = true
+
+        GlobalScope.launch(Dispatchers.Main) {
+            val request = api.getRssFeed()
+            val response = request.await()
+            if (response.isSuccessful) {
+                Log.d(TAG, "isSuccessful")
+                mainFeed.value = response
+                isRefreshing.postValue(false)
+            } else {
+                Log.d(TAG, "not successful")
+                isRefreshing.postValue(false)
             }
         }
     }
@@ -58,6 +84,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
     fun setEpisode(item: Item) {
         episode.value = item
         epTitle = item.title?.replace(" ", "")
+        checkIfDownloaded(epTitle!!)
     }
 
     fun getIsPlaying(): MutableLiveData<Boolean> {
@@ -86,6 +113,8 @@ class MainViewModel @Inject constructor() : ViewModel() {
 
                 downloading.value = true
                 saveToDisk(response.body()!!)
+
+                downloadRepo.saveSingleDownload(episode.value!!)
             } else {
                 Log.d(TAG, "download not reached")
             }
@@ -93,16 +122,19 @@ class MainViewModel @Inject constructor() : ViewModel() {
     }
 
     fun checkIfDownloaded(name: String) {
-        var listFiles = mutableListOf<File>()
-        listFiles.addAll(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).listFiles().toList())
-        for (item in listFiles) {
-            if(item.nameWithoutExtension.equals(name)) {
-                Log.d(TAG, "RIGHT HERE")
-                isDownloaded.value = item.nameWithoutExtension.equals(name)
-                return
-            }else{
-                isDownloaded.value = false
+        if(permission) {
+            var listFiles = mutableListOf<File>()
+            listFiles.addAll(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).listFiles().toList())
+            for (item in listFiles) {
+                if (item.nameWithoutExtension == name) {
+                    isDownloaded.value = true
+                    return
+                } else {
+                    isDownloaded.value = false
+                }
             }
+        } else {
+            Log.d(TAG, "permission not yet granted")
         }
     }
 
@@ -115,7 +147,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
                 var newFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), newTitle.plus(".mp3"))
                 if(newFile.exists()) {
                     newFile.delete()
-                    Log.d(TAG, "DELETE")
+                    downloadRepo.deleteDownloadedEpisode(title)
                     isDownloaded.value = false
                 }
             }
@@ -161,8 +193,8 @@ class MainViewModel @Inject constructor() : ViewModel() {
                     Log.d(TAG, "Failed to save the file!")
 //                    return
                 } finally {
-                    if (`is` != null) `is`!!.close()
-                    if (os != null) os!!.close()
+                    if (`is` != null) `is`.close()
+                    if (os != null) os.close()
 
                     Log.d(TAG, "File saved successfully! 2")
                     downloading.postValue(false)
@@ -174,5 +206,22 @@ class MainViewModel @Inject constructor() : ViewModel() {
 //                return
             }
         }
+    }
+
+    fun onLongClick(title: String): Boolean{
+//        deleteDownload.value = true
+        deleteEpisodeFromStorage(title)
+        return false
+    }
+
+
+    fun showDownloads(show: Boolean){
+        showDownloads.value = show
+    }
+
+    fun getAllDownloads(): MutableList<File> {
+        var listFiles = mutableListOf<File>()
+        listFiles.addAll(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).listFiles().toList())
+        return listFiles
     }
 }

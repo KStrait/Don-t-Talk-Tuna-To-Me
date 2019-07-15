@@ -5,8 +5,6 @@ import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.os.Bundle
-import android.support.annotation.NonNull
-import android.support.annotation.Nullable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,8 +17,8 @@ import android.util.Log
 import com.kylestrait.donttalktunatome.MainViewModel
 import com.kylestrait.donttalktunatome.data.Item
 import com.kylestrait.donttalktunatome.databinding.FragmentEpisodesBinding
-import com.kylestrait.donttalktunatome.manager.AudioManager
-import com.google.android.exoplayer2.ExoPlayer
+import com.kylestrait.donttalktunatome.MainActivity
+import com.kylestrait.donttalktunatome.repo.DownloadRepo
 import dagger.android.support.DaggerFragment
 import javax.inject.Inject
 
@@ -36,11 +34,6 @@ class EpisodesFragment @Inject constructor() : DaggerFragment() {
     @Inject
     lateinit var mViewModelFactory: ViewModelProvider.Factory
 
-    var exoPlayer: ExoPlayer? = null
-
-    @Inject
-    lateinit var mAudioManager: AudioManager
-
     var mViewModel: EpisodesViewModel? = null
     var mMainViewModel: MainViewModel? = null
 
@@ -49,7 +42,6 @@ class EpisodesFragment @Inject constructor() : DaggerFragment() {
 
         mBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_episodes, container, false)
         mBinding?.executePendingBindings()
-
 
         return mBinding?.root
     }
@@ -62,10 +54,10 @@ class EpisodesFragment @Inject constructor() : DaggerFragment() {
             mViewModelFactory
         ).get(EpisodesViewModel::class.java)
 
-        mMainViewModel = ViewModelProviders.of(
-            activity!!,
-            mViewModelFactory
-        ).get(MainViewModel::class.java)
+        mMainViewModel = (activity as MainActivity).provideMainViewModel()
+
+        mBinding?.viewModel = mMainViewModel
+        mBinding?.setLifecycleOwner { lifecycle }
 
         if (mBinding?.rv != null) {
             mRV = mBinding?.rv
@@ -89,12 +81,11 @@ class EpisodesFragment @Inject constructor() : DaggerFragment() {
 
         mMainViewModel?.mainFeed?.observe(viewLifecycleOwner, Observer {
             mItems.addAll(it?.body()?.channel?.item!!)
-
-            Log.d(TAG, mItems.get(0).description)
-            mAdapter?.setItems(mItems)
+            mAdapter?.update(it.body()?.channel?.item!!)
             mAdapter?.notifyDataSetChanged()
-        })
 
+            mViewModel?.saveDownloads(it.body()?.channel?.item!!)
+        })
     }
 
     override fun onStop() {

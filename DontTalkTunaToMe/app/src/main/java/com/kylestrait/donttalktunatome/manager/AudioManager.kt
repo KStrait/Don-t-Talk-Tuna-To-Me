@@ -8,18 +8,22 @@ import javax.inject.Inject
 import android.media.MediaPlayer
 import android.media.session.PlaybackState
 import android.net.Uri
+import android.os.Environment
+import android.support.v4.media.session.MediaSessionCompat
 import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.Player.STATE_READY
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.PlayerControlView
 import javax.inject.Singleton
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.source.ExtractorMediaSource
-
+import com.google.android.exoplayer2.upstream.FileDataSourceFactory
+import java.io.File
 
 
 @Singleton
@@ -41,16 +45,18 @@ class AudioManager @Inject constructor() {
 
     var exoPlayer: ExoPlayer? = null
 
-    fun setupPlayer(context: Context, item: Item?) {
-        Log.d("setupPlayer", item?.enclosure?.url)
+    var isDownloaded: Boolean = false
 
+    fun setupPlayer(context: Context, item: Item?, isDownloaded: Boolean) {
+        Log.d("setupPlayer", item?.enclosure?.url)
         mItem = item
         mContext = context
 
+        this.isDownloaded = isDownloaded
+
         isBuffering?.value = true
 
-
-        if(exoPlayer == null) {
+        if (exoPlayer == null) {
             exoPlayer = ExoPlayerFactory.newSimpleInstance(
                 DefaultRenderersFactory(mContext),
                 DefaultTrackSelector(), DefaultLoadControl()
@@ -65,29 +71,7 @@ class AudioManager @Inject constructor() {
 
 
     fun playPodcast() {
-        if (mediaPlayer != null) {
-            if (!mediaPlayer.isPlaying) {
-                Log.d("audioManager", "11111")
-                mediaPlayer.start()
-                isPlaying?.value = true
-            } else {
-                Log.d("audioManager", "22222")
-                mediaPlayer.pause()
-                isPlaying?.value = false
-            }
-        } else {
-            Log.d("audioManager", "NULL")
-        }
-
-        if(exoPlayer?.playWhenReady == true) {
-            exoPlayer?.playWhenReady = false
-        }else{
-            exoPlayer?.playWhenReady = true
-        }
-    }
-
-    fun getPlayer(): MediaPlayer {
-        return mediaPlayer
+        exoPlayer?.playWhenReady = exoPlayer?.playWhenReady != true
     }
 
     fun getExoMediaPlayer(): ExoPlayer? {
@@ -95,14 +79,20 @@ class AudioManager @Inject constructor() {
     }
 
     fun setPlayerViewStuff(playerView: PlayerControlView?) {
-        playerView?.setPlayer(exoPlayer);
+        playerView?.player = exoPlayer
 
-        exoPlayer?.setPlayWhenReady(playWhenReady)
+        exoPlayer?.playWhenReady = playWhenReady
         exoPlayer?.seekTo(currentWindow, playbackPosition)
 
-        val mediaSource: MediaSource = buildMediaSource(Uri.parse(mItem?.enclosure?.url))
-
-        exoPlayer?.prepare(mediaSource, true, false)
+        if (isDownloaded) {
+            var mediaSource: MediaSource = buildLocalMediaSource(getUriForDownloadedEpisode(mItem?.title!!))
+            exoPlayer?.prepare(mediaSource, true, false)
+            Log.d(TAG, "playing download")
+        } else {
+            var mediaSource: MediaSource = buildMediaSource(Uri.parse(mItem?.enclosure?.url))
+            exoPlayer?.prepare(mediaSource, true, false)
+            Log.d(TAG, "playing stream")
+        }
     }
 
     private fun buildMediaSource(uri: Uri?): MediaSource {
@@ -111,4 +101,32 @@ class AudioManager @Inject constructor() {
         ).createMediaSource(uri)
     }
 
+    private fun buildLocalMediaSource(uri: Uri?): MediaSource {
+        return ExtractorMediaSource.Factory(FileDataSourceFactory()).createMediaSource(uri)
+    }
+
+    fun getExoSession(): MediaSessionCompat {
+        return MediaSessionCompat(mContext, TAG)
+    }
+
+    fun releasePlayer() {
+        mediaPlayer.release()
+    }
+
+    fun shutDown() {
+        if (exoPlayer != null) {
+            exoPlayer?.playWhenReady = false
+            exoPlayer?.stop()
+            exoPlayer?.seekTo(0)
+        }
+    }
+
+    fun getUriForDownloadedEpisode(name: String): Uri {
+        var newTitle: String? = name.replace("\\s".toRegex(), "")
+        var newFile =
+            File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), newTitle.plus(".mp3"))
+
+        Log.d(TAG, Uri.fromFile(newFile).path)
+        return Uri.fromFile(newFile)
+    }
 }

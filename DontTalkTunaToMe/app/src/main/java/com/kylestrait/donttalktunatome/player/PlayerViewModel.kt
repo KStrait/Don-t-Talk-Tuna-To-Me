@@ -15,6 +15,8 @@ import com.kylestrait.donttalktunatome.manager.AudioManager
 import javax.inject.Inject
 import android.text.Html
 import com.kylestrait.donttalktunatome.data.Imdb
+import com.kylestrait.donttalktunatome.util.TextFormatter
+import com.kylestrait.donttalktunatome.widget.BaseViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -22,7 +24,7 @@ import retrofit2.Response
 import java.io.File
 
 
-class PlayerViewModel @Inject constructor() : ViewModel() {
+class PlayerViewModel @Inject constructor() : BaseViewModel() {
     val TAG: String? = PlayerViewModel::class.simpleName
 
     @Inject
@@ -36,6 +38,8 @@ class PlayerViewModel @Inject constructor() : ViewModel() {
     var episodeTitle: MutableLiveData<String> = MutableLiveData()
     var isDownloaded: MutableLiveData<Boolean> = MutableLiveData()
 
+    var textFormatter: TextFormatter = TextFormatter()
+
     companion object {
         fun create(fragment: Fragment, viewModelFactory: ViewModelProvider.Factory): EpisodesViewModel {
             return ViewModelProviders.of(fragment, viewModelFactory).get(EpisodesViewModel::class.java)
@@ -43,30 +47,8 @@ class PlayerViewModel @Inject constructor() : ViewModel() {
     }
 
     fun setAudioManager(context: Context, item: Item?) {
-        mAudioManager.setupPlayer(context, item)
-
-        episodeTitle.value = item?.title
-    }
-
-
-    fun playPodcast() {
-        mAudioManager.playPodcast()
-    }
-
-    fun getIsLoading(): MutableLiveData<Boolean>? {
-        return mAudioManager.isBuffering
-    }
-
-    fun getDuration(): MutableLiveData<Int>? {
-        return mAudioManager.duration
-    }
-
-    fun getPlayerStatus(): MutableLiveData<Boolean>? {
-        return mAudioManager.isReady
-    }
-
-    fun getPlayingStatus(): MutableLiveData<Boolean>? {
-        return mAudioManager.isPlaying
+        mAudioManager.setupPlayer(context, item, checkIfDownloaded(item?.title?.replace("\\s".toRegex(), "")!!))
+        episodeTitle.value = item.title
     }
 
     fun getImdbFeed(apiKey: String, movie: String) {
@@ -87,37 +69,25 @@ class PlayerViewModel @Inject constructor() : ViewModel() {
         }
     }
 
+    fun checkIfDownloaded(name: String): Boolean {
+        Log.d(TAG, name)
+        var listFiles = mutableListOf<File>()
+        listFiles.addAll(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).listFiles().toList())
+        for (item in listFiles) {
+            if(item.nameWithoutExtension == name) {
+                Log.d(TAG, item.nameWithoutExtension)
+                return true
+            }else{
+            }
+        }
+        return false
+    }
+
     fun stripHtml(html: String): String {
-        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY).toString()
-        } else {
-            Html.fromHtml(html).toString()
-        }
+        return textFormatter.stripHtml(html)
     }
 
-    fun checkIfDownloaded(name: String) {
-        var listFiles = mutableListOf<File>()
-        listFiles.addAll(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).listFiles().toList())
-        for (item in listFiles) {
-            if(item.nameWithoutExtension.equals(name)) {
-                isDownloaded.value = item.nameWithoutExtension.equals(name)
-            }
-        }
-    }
-
-    fun deleteEpisodeFromStorage(title: String){
-        var newTitle: String? =  title.replace("\\s".toRegex(), "")
-        var listFiles = mutableListOf<File>()
-        listFiles.addAll(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).listFiles().toList())
-        for (item in listFiles) {
-            if(item.nameWithoutExtension.equals(newTitle)) {
-                var newFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), newTitle.plus(".mp3"))
-                if(newFile.exists()) {
-                    newFile.delete()
-                    Log.d(TAG, "DELETE")
-                    isDownloaded.value = false
-                }
-            }
-        }
+    fun stripChars(title: String): String {
+        return textFormatter.stripChars(title)
     }
 }

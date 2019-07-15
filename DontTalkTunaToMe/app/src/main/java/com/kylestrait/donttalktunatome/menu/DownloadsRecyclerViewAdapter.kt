@@ -1,20 +1,20 @@
-package com.kylestrait.donttalktunatome.episodes
+package com.kylestrait.donttalktunatome.menu
 
 import android.databinding.DataBindingUtil
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.kylestrait.donttalktunatome.MainViewModel
 import com.kylestrait.donttalktunatome.R
 import com.kylestrait.donttalktunatome.data.Item
 import com.kylestrait.donttalktunatome.databinding.ItemPodcastBinding
+import com.kylestrait.donttalktunatome.episodes.EpisodesRecyclerViewAdapter
 import com.kylestrait.donttalktunatome.widget.BindingViewHolder
 import com.squareup.picasso.Picasso
 import javax.inject.Inject
-import android.support.v7.util.DiffUtil
-import android.support.annotation.MainThread
 
-class EpisodesRecyclerViewAdapter @Inject constructor(mainViewModel: MainViewModel?) :
+class DownloadsRecyclerViewAdapter @Inject constructor(mainViewModel: MainViewModel?) :
     RecyclerView.Adapter<BindingViewHolder>() {
     var TAG: String? = EpisodesRecyclerViewAdapter::class.simpleName
 
@@ -48,48 +48,18 @@ class EpisodesRecyclerViewAdapter @Inject constructor(mainViewModel: MainViewMod
         binding.viewModel = mViewModel
 
         pic.load(item.image?.href).fit().into(binding.image)
-
     }
 
     fun setItems(items: List<Item>?) {
         if (null != items) {
             if (mItems.isEmpty()) {
+                Log.d(TAG, "setItems()")
                 mItems = ArrayList<Item>(items)
             }
         }
     }
 
-    @MainThread
-    fun update(newList: List<Item>) {
-        if(mItems.isEmpty() || mItems == null){
-            setItems(newList)
-        }else {
-            val result = DiffUtil.calculateDiff(
-                MediaItemDiffCallback(mItems, newList), false
-            )
-//            mItems.clear()
-//            mItems.addAll(newList)
-            result.dispatchUpdatesTo(this)
-        }
-    }
-
-    inner class MediaItemDiffCallback(var oldList: List<Item>?, var newList: List<Item>?) :
-        DiffUtil.Callback() {
-
-        override fun getOldListSize(): Int {
-            return if (oldList == null) 0 else oldList!!.size
-        }
-
-        override fun getNewListSize(): Int {
-            return if (newList == null) 0 else newList!!.size
-        }
-
-        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return oldList!![oldItemPosition].title.equals(newList!![newItemPosition].title)
-        }
-
-        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return oldList!![oldItemPosition].title.equals(newList!![newItemPosition].title)
-        }
+    fun removeItem(position: Int){
+        mItems.removeAt(position)
     }
 }

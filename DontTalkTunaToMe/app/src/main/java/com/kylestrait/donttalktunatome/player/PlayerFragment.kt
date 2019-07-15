@@ -1,8 +1,7 @@
 package com.kylestrait.donttalktunatome.player
 
+import android.arch.lifecycle.*
 import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
 import android.arch.persistence.room.util.StringUtil
 import android.databinding.DataBindingUtil
 import android.os.Bundle
@@ -35,14 +34,9 @@ class PlayerFragment @Inject constructor() : DaggerFragment() {
 
     var mBinding: FragmentPlayerBinding? = null
     var mEpisode: Item? = null
-    var exoPlayer: ExoPlayer? = null
 
     @Inject
     lateinit var mViewModelFactory: ViewModelProvider.Factory
-
-    @Inject
-    lateinit var mAudioManager: AudioManager
-
 
     var mViewModel: PlayerViewModel? = null
     var mMainViewModel: MainViewModel? = null
@@ -55,40 +49,13 @@ class PlayerFragment @Inject constructor() : DaggerFragment() {
             mViewModelFactory
         ).get(PlayerViewModel::class.java)
 
-//        mMainViewModel = ViewModelProviders.of(
-//            activity!!,
-//            mViewModelFactory
-//        ).get(MainViewModel::class.java)
-
         mMainViewModel = (activity as MainActivity).provideMainViewModel()
 
         mBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_player, container, false)
         mBinding?.executePendingBindings()
 
         mBinding?.viewModel = mViewModel
-
         mBinding?.mainViewModel = mMainViewModel
-
-        mMainViewModel?.episode?.observe(viewLifecycleOwner, Observer {
-            if (it != null) {
-                mEpisode = it
-                mViewModel?.setAudioManager(activity!!, mEpisode)
-                mBinding?.myPodcast = it
-
-                exoPlayer = mAudioManager.getExoMediaPlayer()
-                val playerView = mBinding?.playerView
-                mAudioManager.setPlayerViewStuff(playerView)
-                playerView?.showTimeoutMs = 0
-
-                if (mEpisode?.title?.contains("(")!!) {
-                    mViewModel?.getImdbFeed("", stripChars(mEpisode?.title!!))
-                }
-
-                var title: String? =  mEpisode?.title?.replace("\\s".toRegex(), "")
-                Log.d(TAG, title)
-                mMainViewModel?.checkIfDownloaded(title!!)
-            }
-        })
 
         return mBinding?.root
     }
@@ -96,41 +63,35 @@ class PlayerFragment @Inject constructor() : DaggerFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-
         mViewModel?.posterLink?.observe(viewLifecycleOwner, Observer {
             Log.d(TAG, it)
             Picasso.get().load("http://image.tmdb.org/t/p/w342/".plus(it)).into(mBinding?.posterImage)
         })
 
         mMainViewModel?.downloadProgress?.observe(viewLifecycleOwner, Observer {
-            if(it != null && it > 0 && it < 100){
+            if (it != null && it > 0 && it < 100) {
                 mBinding?.progress?.visibility = View.VISIBLE
-            }else{
+            } else {
                 mBinding?.progress?.visibility = View.GONE
             }
-
-            Log.d(TAG, it?.toString())
         })
 
-        mMainViewModel?.isDownloaded?.observe(viewLifecycleOwner, Observer {
-            if (it == true){
-                Log.d(TAG, "is Downloaded")
+        var episodeCall: LiveData<Item> = mMainViewModel?.episode!!
+        val episodeObserver = Observer<Item> {
+            mEpisode = it
+            mViewModel?.getImdbFeed("", mViewModel!!.stripChars(mEpisode?.title!!))
+            mBinding?.myPodcast = it
+        }
+
+        episodeCall.observe(viewLifecycleOwner, episodeObserver)
+
+        var isDownloaded: LiveData<Boolean> = Transformations.switchMap(episodeCall) { mMainViewModel?.isDownloaded }
+        isDownloaded.observe(viewLifecycleOwner, Observer {
+            if (it == true) {
                 mBinding?.downloadBtn?.isSelected = true
-            }else{
-                Log.d(TAG, "is NOT Downloaded")
+            } else if (it == false) {
                 mBinding?.downloadBtn?.isSelected = false
             }
         })
-    }
-
-    fun stripChars(title: String): String {
-        return title.substring(title.indexOf("(") + 1, title.indexOf(")"))
-    }
-
-    override fun onResume() {
-        super.onResume()
-        val startIntent = Intent(activity, MediaService::class.java)
-        startIntent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION)
-        activity?.startService(startIntent)
     }
 }
