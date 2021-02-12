@@ -1,18 +1,19 @@
 package com.kylestrait.donttalktunatome
 
-import android.arch.lifecycle.*
 import android.os.Environment
-import android.support.v4.app.FragmentActivity
 import android.util.Log
 import android.widget.Toast
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.kylestrait.donttalktunatome.data.Item
 import com.kylestrait.donttalktunatome.data.RSS
 import com.kylestrait.donttalktunatome.di.NetworkModule
 import com.kylestrait.donttalktunatome.manager.AudioManager
 import com.kylestrait.donttalktunatome.repo.DownloadRepo
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import retrofit2.Response
 import java.text.SimpleDateFormat
 import javax.inject.Inject
@@ -33,7 +34,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
 
     var mainFeed: MutableLiveData<Response<RSS>> = MutableLiveData()
     var episode: MutableLiveData<Item> = MutableLiveData()
-    var epTitle: String? = null
+    var epTitle: CharSequence? = null
     var getIsPlaying: MutableLiveData<Boolean> = MutableLiveData()
     var downloadProgress: MutableLiveData<Int> = MutableLiveData()
     var downloading: MutableLiveData<Boolean> = MutableLiveData()
@@ -50,15 +51,15 @@ class MainViewModel @Inject constructor() : ViewModel() {
     }
 
     fun getMainFeed() {
-        GlobalScope.launch(Dispatchers.Main) {
+        CoroutineScope(context = Dispatchers.Default).launch {
             val request = api.getRssFeed()
             val response = request.await()
             if (response.isSuccessful) {
-                Log.d(TAG, "isSuccessful")
-                mainFeed.value = response
+                Log.d(TAG, "getMainFeed() isSuccessful")
+                mainFeed.postValue(response)
                 isRefreshing.postValue(false)
             } else {
-                Log.d(TAG, "not successful")
+                Log.d(TAG, "getMainFeed() not successful")
                 isRefreshing.postValue(false)
             }
         }
@@ -67,12 +68,12 @@ class MainViewModel @Inject constructor() : ViewModel() {
     fun reloadFeed() {
         isRefreshing.value = true
 
-        GlobalScope.launch(Dispatchers.Main) {
+        GlobalScope.launch(Dispatchers.Default) {
             val request = api.getRssFeed()
             val response = request.await()
             if (response.isSuccessful) {
                 Log.d(TAG, "isSuccessful")
-                mainFeed.value = response
+                mainFeed.postValue(response)
                 isRefreshing.postValue(false)
             } else {
                 Log.d(TAG, "not successful")
@@ -83,7 +84,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
 
     fun setEpisode(item: Item) {
         episode.value = item
-        epTitle = item.title?.replace(" ", "")
+        epTitle = item.title?.toString()?.replace(" ", "")
         checkIfDownloaded(epTitle!!)
     }
 
@@ -121,7 +122,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    fun checkIfDownloaded(name: String) {
+    fun checkIfDownloaded(name: CharSequence) {
         if(permission) {
             var listFiles = mutableListOf<File>()
             listFiles.addAll(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).listFiles().toList())
@@ -155,9 +156,9 @@ class MainViewModel @Inject constructor() : ViewModel() {
     }
 
     fun saveToDisk(body: ResponseBody) {
-        GlobalScope.launch(Dispatchers.Default) {
+        CoroutineScope(Dispatchers.Default).launch {
             try {
-                var newFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), epTitle.plus(".mp3"))
+                var newFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), epTitle.toString().plus(".mp3"))
 
                 var `is`: InputStream? = null
                 var os: OutputStream? = null

@@ -20,7 +20,7 @@ class Imdb : Parcelable {
         this.page = `in`.readValue(Int::class.java.classLoader) as Int
         this.total_results = `in`.readValue(Int::class.java.classLoader) as Int
         this.total_pages = `in`.readValue(Int::class.java.classLoader) as Int
-        `in`.readList(this.results, com.kylestrait.donttalktunatome.data.Result::class.java.classLoader)
+        this.results?.let { `in`.readList(it, com.kylestrait.donttalktunatome.data.Result::class.java.classLoader) }
     }
 
     constructor() {}

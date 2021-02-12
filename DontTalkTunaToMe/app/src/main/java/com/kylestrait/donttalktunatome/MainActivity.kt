@@ -1,20 +1,20 @@
 package com.kylestrait.donttalktunatome
 
 import android.Manifest
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
 import android.os.Build
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
 import android.util.Log
 import com.kylestrait.donttalktunatome.episodes.EpisodesFragment
 import com.kylestrait.donttalktunatome.player.PlayerFragment
 import dagger.android.support.DaggerAppCompatActivity
 import javax.inject.Inject
-import android.support.v4.app.ActivityCompat
+import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.kylestrait.donttalktunatome.manager.MediaService
 import com.kylestrait.donttalktunatome.menu.DownloadsFragment
 import com.kylestrait.donttalktunatome.player.BottomPlayerFragment
@@ -35,17 +35,15 @@ class MainActivity : DaggerAppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if(null == savedInstanceState){
-            supportFragmentManager.beginTransaction().replace(R.id.container, EpisodesFragment()).commit()
+        if (null == savedInstanceState) {
+            supportFragmentManager.beginTransaction().replace(R.id.container, EpisodesFragment())
+                .commit()
         }
 
         mViewModel = ViewModelProviders.of(this, mViewModelFactory).get(MainViewModel::class.java)
 
-        mViewModel?.mainFeed?.observe(this, Observer {
-            Log.d(TAG, "HERE 123")
-        })
-
         mViewModel?.episode?.observe(this, Observer {
+            Log.d(TAG, "HERE WE GO")
             setFragment(PlayerFragment(), false, "playerFrag")
             setBottomFragment(BottomPlayerFragment(), false, "bottomPlayerFrag")
         })
@@ -53,7 +51,7 @@ class MainActivity : DaggerAppCompatActivity() {
         mViewModel?.getMainFeed()
 
         mViewModel?.showDownloads?.observe(this, Observer {
-            if(it == true){
+            if (it == true) {
                 setFragment(DownloadsFragment(), false, "downloadsFrag")
             }
         })
@@ -62,12 +60,12 @@ class MainActivity : DaggerAppCompatActivity() {
     }
 
     private fun setFragment(frag: Fragment, clear: Boolean, tag: String) {
-        if(clear){
+        if (clear) {
             clearBackStack()
             val ft = supportFragmentManager.beginTransaction()
             ft.replace(R.id.container, frag)
             ft.commit()
-        }else {
+        } else {
             val ft = supportFragmentManager.beginTransaction()
             ft.replace(R.id.container, frag).addToBackStack(tag)
             ft.commit()
@@ -75,12 +73,12 @@ class MainActivity : DaggerAppCompatActivity() {
     }
 
     private fun setBottomFragment(frag: Fragment, clear: Boolean, tag: String) {
-        if(clear){
+        if (clear) {
             clearBackStack()
             val ft = supportFragmentManager.beginTransaction()
             ft.replace(R.id.bottom_player_container, frag)
             ft.commit()
-        }else {
+        } else {
             val ft = supportFragmentManager.beginTransaction()
             ft.replace(R.id.bottom_player_container, frag)
             ft.commit()
@@ -92,7 +90,10 @@ class MainActivity : DaggerAppCompatActivity() {
         if (fragmentManager.backStackEntryCount > 0) {
             _clearingBackStack = true
             val entry = fragmentManager.getBackStackEntryAt(0)
-            fragmentManager.popBackStackImmediate(entry.id, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            fragmentManager.popBackStackImmediate(
+                entry.id,
+                FragmentManager.POP_BACK_STACK_INCLUSIVE
+            )
         }
     }
 
@@ -105,7 +106,11 @@ class MainActivity : DaggerAppCompatActivity() {
             } else {
 
                 Log.v(TAG, "Permission is revoked")
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    1
+                )
                 mViewModel?.permission = false
                 return false
             }

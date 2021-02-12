@@ -1,7 +1,7 @@
 package com.kylestrait.donttalktunatome.menu
 
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.ViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
 import com.kylestrait.donttalktunatome.data.Item
 import com.kylestrait.donttalktunatome.repo.DownloadRepo
 import javax.inject.Inject

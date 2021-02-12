@@ -1,8 +1,9 @@
 package com.kylestrait.donttalktunatome.repo
 
-import android.arch.persistence.room.Database
-import android.arch.persistence.room.RoomDatabase
-import android.arch.persistence.room.TypeConverters
+
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.kylestrait.donttalktunatome.data.Item
 import com.kylestrait.donttalktunatome.data.dao.EpisodeDao
 import com.kylestrait.donttalktunatome.util.EnclosureTypeConverter

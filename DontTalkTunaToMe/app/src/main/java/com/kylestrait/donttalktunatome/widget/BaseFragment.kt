@@ -1,8 +1,8 @@
 package com.kylestrait.donttalktunatome.widget
 
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 
 import javax.inject.Inject
 
@@ -31,7 +31,7 @@ abstract class BaseFragment<T : BaseViewModel> protected constructor(private val
 
     protected var viewModel: T? = null
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(clazz)
         if (context is MainViewModelProvider)

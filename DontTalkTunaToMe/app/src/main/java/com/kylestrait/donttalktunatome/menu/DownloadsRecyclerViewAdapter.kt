@@ -1,10 +1,10 @@
 package com.kylestrait.donttalktunatome.menu
 
-import android.databinding.DataBindingUtil
-import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.RecyclerView
 import com.kylestrait.donttalktunatome.MainViewModel
 import com.kylestrait.donttalktunatome.R
 import com.kylestrait.donttalktunatome.data.Item

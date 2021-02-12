@@ -1,28 +1,30 @@
 package com.kylestrait.donttalktunatome.episodes
 
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
+
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.kylestrait.donttalktunatome.R
-import android.databinding.DataBindingUtil
-import android.support.v7.widget.DividerItemDecoration
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.util.Log
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.kylestrait.donttalktunatome.MainViewModel
 import com.kylestrait.donttalktunatome.data.Item
 import com.kylestrait.donttalktunatome.databinding.FragmentEpisodesBinding
 import com.kylestrait.donttalktunatome.MainActivity
 import com.kylestrait.donttalktunatome.repo.DownloadRepo
+import com.kylestrait.donttalktunatome.widget.BaseFragment
 import dagger.android.support.DaggerFragment
 import javax.inject.Inject
 
-class EpisodesFragment @Inject constructor() : DaggerFragment() {
+class EpisodesFragment @Inject constructor() : BaseFragment<EpisodesViewModel>(EpisodesViewModel::class.java) {
     var TAG: String? = EpisodesFragment::class.simpleName
 
     var mBinding: FragmentEpisodesBinding? = null
@@ -83,8 +85,6 @@ class EpisodesFragment @Inject constructor() : DaggerFragment() {
             mItems.addAll(it?.body()?.channel?.item!!)
             mAdapter?.update(it.body()?.channel?.item!!)
             mAdapter?.notifyDataSetChanged()
-
-            mViewModel?.saveDownloads(it.body()?.channel?.item!!)
         })
     }
 

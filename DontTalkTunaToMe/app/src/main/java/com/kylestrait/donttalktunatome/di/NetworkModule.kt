@@ -35,6 +35,7 @@ class NetworkModule @Inject constructor() {
         // add your other interceptors …
         // add logging as last interceptor
         httpClient.addInterceptor(logging)  // <-- this is the important line!
+        httpClient.addNetworkInterceptor(logging)
 
         val retrofit = Retrofit.Builder()
             .baseUrl("https://donttalktuna.libsyn.com/")

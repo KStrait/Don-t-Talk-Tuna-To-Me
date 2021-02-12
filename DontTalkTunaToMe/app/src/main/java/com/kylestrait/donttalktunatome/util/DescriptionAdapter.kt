@@ -6,10 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.support.annotation.Nullable
 import android.text.Html
 import android.util.Log
 import android.view.Window
+import androidx.annotation.Nullable
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import com.kylestrait.donttalktunatome.R
 import com.kylestrait.donttalktunatome.data.Constants
@@ -20,18 +20,20 @@ import kotlin.properties.Delegates
 
 
 class DescriptionAdapter @Inject constructor(audioManager: AudioManager, mContext: Context) : PlayerNotificationManager.MediaDescriptionAdapter {
+    var TAG: String = DescriptionAdapter::class.java.simpleName
 
     var context: Context by Delegates.notNull()
     var audioManager: AudioManager by Delegates.notNull()
 
     init {
+        Log.d(TAG, "init")
         context = mContext
         this.audioManager = audioManager
     }
 
-    override fun getCurrentContentTitle(player: Player): String? {
+    override fun getCurrentContentTitle(player: Player): String {
         val window = player.currentWindowIndex
-        return getTitle(window)
+        return getTitle(window)!!
     }
 
     @Nullable

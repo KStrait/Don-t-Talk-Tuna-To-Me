@@ -46,7 +46,7 @@ class Result : Parcelable {
         this.poster_path = `in`.readValue(String::class.java.classLoader) as String
         this.original_language = `in`.readValue(String::class.java.classLoader) as String
         this.original_title = `in`.readValue(String::class.java.classLoader) as String
-        `in`.readList(this.genre_ids, Int::class.java.classLoader)
+        this.genre_ids?.let { `in`.readList(it, Int::class.java.classLoader) }
         this.backdrop_path = `in`.readValue(String::class.java.classLoader) as String
         this.adult = `in`.readValue(Boolean::class.java.classLoader) as Boolean
         this.overview = `in`.readValue(String::class.java.classLoader) as String

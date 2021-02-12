@@ -1,9 +1,11 @@
 package com.kylestrait.donttalktunatome.episodes
 
-import android.databinding.DataBindingUtil
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.annotation.MainThread
+import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import com.kylestrait.donttalktunatome.MainViewModel
 import com.kylestrait.donttalktunatome.R
 import com.kylestrait.donttalktunatome.data.Item
@@ -11,8 +13,6 @@ import com.kylestrait.donttalktunatome.databinding.ItemPodcastBinding
 import com.kylestrait.donttalktunatome.widget.BindingViewHolder
 import com.squareup.picasso.Picasso
 import javax.inject.Inject
-import android.support.v7.util.DiffUtil
-import android.support.annotation.MainThread
 
 class EpisodesRecyclerViewAdapter @Inject constructor(mainViewModel: MainViewModel?) :
     RecyclerView.Adapter<BindingViewHolder>() {

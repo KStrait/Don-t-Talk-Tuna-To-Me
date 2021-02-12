@@ -1,8 +1,8 @@
 package com.kylestrait.donttalktunatome.widget
 
-import android.databinding.DataBindingUtil
-import android.databinding.ViewDataBinding
-import android.support.v7.widget.RecyclerView
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
+import androidx.recyclerview.widget.RecyclerView
 
 class BindingViewHolder(binding: ViewDataBinding) : RecyclerView.ViewHolder(binding.root) {
 

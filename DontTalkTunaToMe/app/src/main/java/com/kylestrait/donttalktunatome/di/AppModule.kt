@@ -1,8 +1,9 @@
 package com.kylestrait.donttalktunatome.di
 
 import android.app.Application
-import android.arch.persistence.room.Room
 import android.content.Context
+import androidx.room.Room
+import androidx.room.RoomDatabase
 import com.kylestrait.donttalktunatome.TunaApplication
 import com.kylestrait.donttalktunatome.data.dao.EpisodeDao
 import com.kylestrait.donttalktunatome.repo.AppDatabase

@@ -5,11 +5,9 @@ import android.os.IBinder
 import android.app.*
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.support.v4.app.NotificationCompat
-import android.support.v4.media.app.NotificationCompat.MediaStyle
-import android.support.v4.media.session.MediaButtonReceiver
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import com.kylestrait.donttalktunatome.MainActivity
 import com.kylestrait.donttalktunatome.R
 import com.kylestrait.donttalktunatome.data.Constants
@@ -81,7 +79,7 @@ class MediaService @Inject constructor(): Service() {
                 .setAutoCancel(true)
                 .addAction(android.R.drawable.ic_media_play, "Play", pplayIntent)
                 .addAction(R.drawable.ic_stop, "Stop", pstopintent)
-                .setStyle(MediaStyle().setMediaSession(audioManager.getExoSession().sessionToken))
+                .setStyle(androidx.media.app.NotificationCompat.MediaStyle().setMediaSession(audioManager.getExoSession().sessionToken))
                 .build()
             startForeground(
                 101,
@@ -101,7 +99,7 @@ class MediaService @Inject constructor(): Service() {
 //            stopSelf()
         }
 
-        return Service.START_STICKY
+        return Service.START_NOT_STICKY
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {

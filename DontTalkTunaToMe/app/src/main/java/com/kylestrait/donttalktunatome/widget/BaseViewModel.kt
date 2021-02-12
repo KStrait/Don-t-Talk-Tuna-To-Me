@@ -1,6 +1,6 @@
 package com.kylestrait.donttalktunatome.widget
 
-import android.arch.lifecycle.ViewModel
+import androidx.lifecycle.ViewModel
 import com.kylestrait.donttalktunatome.MainViewModel
 
 /**
@@ -17,7 +17,7 @@ abstract class BaseViewModel : ViewModel() {
 
     fun pause() {}
 
-    override protected fun onCleared() {
+    override fun onCleared() {
         mainViewModel = null
     }
 }

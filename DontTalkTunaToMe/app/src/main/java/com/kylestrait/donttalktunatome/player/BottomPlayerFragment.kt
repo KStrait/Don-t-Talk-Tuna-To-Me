@@ -1,15 +1,14 @@
 package com.kylestrait.donttalktunatome.player
 
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
-import android.content.Intent
-import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.google.android.exoplayer2.ExoPlayer
 import com.kylestrait.donttalktunatome.MainActivity
 import com.kylestrait.donttalktunatome.MainViewModel
@@ -26,6 +25,8 @@ import com.kylestrait.donttalktunatome.widget.BaseFragment
 import dagger.android.support.DaggerFragment
 
 class BottomPlayerFragment @Inject constructor(): BaseFragment<PlayerViewModel>(PlayerViewModel::class.java) {
+    var TAG: String = BottomPlayerFragment::class.java.simpleName
+
     var mMainViewModel: MainViewModel? = null
     var mViewModel: PlayerViewModel? = null
     var mBinding: FragmentBottomPlayerBinding? = null
@@ -64,18 +65,13 @@ class BottomPlayerFragment @Inject constructor(): BaseFragment<PlayerViewModel>(
         super.onActivityCreated(savedInstanceState)
 
         playerNotificationManager = PlayerNotificationManager(
-            context,
+            context!!,
             "some_channel",
             101,
             DescriptionAdapter(mAudioManager, context!!)
         )
 
-        playerNotificationManager.setOngoing(false)
-
-//        mMainViewModel?.episode?.observe(viewLifecycleOwner, Observer {
-//            mEpisode = it
-//            setupExoPlayerOther(it!!)
-//        })
+//        playerNotificationManager.setOngoing(false)
     }
 
     private fun setupExoPlayerOther(item: Item) {
@@ -90,31 +86,21 @@ class BottomPlayerFragment @Inject constructor(): BaseFragment<PlayerViewModel>(
 
         playerNotificationManager.setPlayer(exoPlayer)
         playerNotificationManager.setMediaSessionToken(mAudioManager.getExoSession().sessionToken)
-
-//        startServiceThing()
     }
 
     override fun onResume() {
         super.onResume()
 
         mMainViewModel?.episode?.observe(viewLifecycleOwner, Observer {
+            Log.d(TAG, "here 1")
             mEpisode = it
             setupExoPlayerOther(it!!)
         })
     }
 
-//    fun isPlaying(): Boolean {
-//        return exoPlayer?.getPlaybackState() == Player.STATE_READY && exoPlayer?.getPlayWhenReady()!!
-//    }
-
-    private fun startServiceThing() {
-        val startIntent = Intent(activity, MediaService::class.java)
-        startIntent.action = Constants.ACTION.STARTFOREGROUND_ACTION
-        activity?.startService(startIntent)
-    }
-
-    override fun onPause() {
-        super.onPause()
+    override fun onDestroy() {
+        super.onDestroy()
+        playerNotificationManager.setPlayer(null)
         mAudioManager.releasePlayer()
     }
 }

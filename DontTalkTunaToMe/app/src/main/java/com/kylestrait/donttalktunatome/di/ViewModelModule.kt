@@ -1,7 +1,7 @@
 package com.kylestrait.donttalktunatome.di
 
-import android.arch.lifecycle.ViewModel
-import android.arch.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.kylestrait.donttalktunatome.MainViewModel
 import com.kylestrait.donttalktunatome.episodes.EpisodesViewModel
 import com.kylestrait.donttalktunatome.menu.DownloadsViewModel

@@ -1,8 +1,9 @@
 package com.kylestrait.donttalktunatome.repo
 
-import android.arch.lifecycle.LiveData
+import androidx.lifecycle.LiveData
 import com.kylestrait.donttalktunatome.data.Item
 import com.kylestrait.donttalktunatome.data.dao.EpisodeDao
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -14,21 +15,9 @@ class DownloadRepo @Inject constructor(episodeDao: EpisodeDao){
 
     var mEpisodeDao = episodeDao
 
-    fun saveDownloads(episodes: List<Item>) {
-        GlobalScope.launch(Dispatchers.Default) {
-            mEpisodeDao.insertAll(episodes)
-        }
-    }
-
     fun saveSingleDownload(item: Item){
-        GlobalScope.launch(Dispatchers.Default) {
+        CoroutineScope(Dispatchers.Default).launch {
             mEpisodeDao.insertSingleDownload(item)
-        }
-    }
-
-    fun deleteDownloads(episodes: List<Item>) {
-        GlobalScope.launch(Dispatchers.Default) {
-            mEpisodeDao.deleteAllDownloads()
         }
     }
 
@@ -37,7 +26,7 @@ class DownloadRepo @Inject constructor(episodeDao: EpisodeDao){
     }
 
     fun deleteDownloadedEpisode(title: String) {
-        GlobalScope.launch(Dispatchers.Default) {
+        CoroutineScope(Dispatchers.Default).launch {
             mEpisodeDao.deleteDownloadedEpisode(title)
         }
     }

@@ -1,6 +1,6 @@
 package com.kylestrait.donttalktunatome.util
 
-import android.arch.persistence.room.TypeConverter
+import androidx.room.TypeConverter
 import com.kylestrait.donttalktunatome.data.Image
 
 class ImageTypeConverter {

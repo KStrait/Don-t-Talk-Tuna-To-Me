@@ -1,19 +1,19 @@
 package com.kylestrait.donttalktunatome.menu
 
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
-import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.v7.widget.DividerItemDecoration
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.helper.ItemTouchHelper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.kylestrait.donttalktunatome.MainActivity
 import com.kylestrait.donttalktunatome.MainViewModel
 import com.kylestrait.donttalktunatome.R
@@ -90,7 +90,7 @@ class DownloadsFragment @Inject constructor() : DaggerFragment(), SwipeToDeleteH
         }
 
         mViewModel?.getAllDownloads()?.observe(viewLifecycleOwner, Observer {
-            Log.d(TAG, it?.size.toString())
+            Log.d(TAG, it.size.toString())
             mItems.addAll(it!!)
             mAdapter?.setItems(it)
             mAdapter?.notifyDataSetChanged()
@@ -100,7 +100,7 @@ class DownloadsFragment @Inject constructor() : DaggerFragment(), SwipeToDeleteH
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int, position: Int) {
         mAdapter?.removeItem(position)
         mAdapter?.notifyItemRemoved(position)
-        mMainViewModel?.deleteEpisodeFromStorage(mItems[position].title!!)
+        mMainViewModel?.deleteEpisodeFromStorage(mItems[position].title!!.toString())
     }
 
     override fun onBeginSwipe(direction: Float, viewHolder: RecyclerView.ViewHolder) {

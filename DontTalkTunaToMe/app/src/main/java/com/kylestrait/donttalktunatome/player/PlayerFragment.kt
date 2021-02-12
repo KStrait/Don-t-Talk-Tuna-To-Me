@@ -1,9 +1,5 @@
 package com.kylestrait.donttalktunatome.player
 
-import android.arch.lifecycle.*
-import android.arch.lifecycle.Observer
-import android.arch.persistence.room.util.StringUtil
-import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,11 +15,11 @@ import android.content.Intent
 import android.os.Handler
 import android.util.Log
 import android.widget.SeekBar
-import com.kylestrait.donttalktunatome.BR
-import com.kylestrait.donttalktunatome.data.Constants
-import com.kylestrait.donttalktunatome.manager.MediaService
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.ui.PlayerControlView
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Transformations
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.kylestrait.donttalktunatome.MainActivity
 import com.squareup.picasso.Picasso
 import java.util.*
@@ -63,30 +59,31 @@ class PlayerFragment @Inject constructor() : DaggerFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        mViewModel?.posterLink?.observe(viewLifecycleOwner, Observer {
+        mViewModel?.posterLink?.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
             Log.d(TAG, it)
             Picasso.get().load("http://image.tmdb.org/t/p/w342/".plus(it)).into(mBinding?.posterImage)
         })
 
-        mMainViewModel?.downloadProgress?.observe(viewLifecycleOwner, Observer {
+        mMainViewModel?.downloadProgress?.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
             if (it != null && it > 0 && it < 100) {
                 mBinding?.progress?.visibility = View.VISIBLE
+                mBinding?.progress?.progress = it
             } else {
                 mBinding?.progress?.visibility = View.GONE
             }
         })
 
         var episodeCall: LiveData<Item> = mMainViewModel?.episode!!
-        val episodeObserver = Observer<Item> {
+        val episodeObserver = androidx.lifecycle.Observer<Item> {
             mEpisode = it
-            mViewModel?.getImdbFeed("", mViewModel!!.stripChars(mEpisode?.title!!))
+            mViewModel?.getImdbFeed("", mViewModel!!.stripChars(mEpisode?.title!!.toString()))
             mBinding?.myPodcast = it
         }
 
         episodeCall.observe(viewLifecycleOwner, episodeObserver)
 
         var isDownloaded: LiveData<Boolean> = Transformations.switchMap(episodeCall) { mMainViewModel?.isDownloaded }
-        isDownloaded.observe(viewLifecycleOwner, Observer {
+        isDownloaded.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
             if (it == true) {
                 mBinding?.downloadBtn?.isSelected = true
             } else if (it == false) {

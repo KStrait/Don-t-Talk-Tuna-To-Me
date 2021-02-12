@@ -1,12 +1,7 @@
 package com.kylestrait.donttalktunatome.player
 
-import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.ViewModel
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.os.Environment
-import android.support.v4.app.Fragment
 import android.util.Log
 import com.kylestrait.donttalktunatome.data.Item
 import com.kylestrait.donttalktunatome.di.NetworkModule
@@ -14,6 +9,10 @@ import com.kylestrait.donttalktunatome.episodes.EpisodesViewModel
 import com.kylestrait.donttalktunatome.manager.AudioManager
 import javax.inject.Inject
 import android.text.Html
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.kylestrait.donttalktunatome.data.Imdb
 import com.kylestrait.donttalktunatome.util.TextFormatter
 import com.kylestrait.donttalktunatome.widget.BaseViewModel
