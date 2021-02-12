@@ -13,14 +13,14 @@ class TextFormatter {
     }
 
     fun stripChars(title: String): String {
-        if (title.contains(":") && title.contains("(")) {
-            return title.substringBefore(":")
+        return if (title.contains(":") && title.contains("(")) {
+            title.substringBefore(":")
         } else if (title.contains("(") && title.contains(")")) {
-            return title.substring(title.indexOf("(") + 1, title.indexOf(")"))
+            title.substring(title.indexOf("(") + 1, title.indexOf(")"))
         } else if (title.contains(":")) {
-            return title.substringBefore(":")
+            title.substringBefore(":")
         } else {
-            return ""
+            ""
         }
     }
 }
