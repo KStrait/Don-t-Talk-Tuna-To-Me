@@ -4,10 +4,13 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import android.os.StrictMode
+import android.os.StrictMode.VmPolicy
 import android.util.Log
 import com.kylestrait.donttalktunatome.di.DaggerAppComponent
 import dagger.android.AndroidInjector
 import dagger.android.support.DaggerApplication
+
 
 class TunaApplication: DaggerApplication() {
     private var TAG: String? = TunaApplication::class.simpleName
@@ -20,6 +23,16 @@ class TunaApplication: DaggerApplication() {
         super.onCreate()
 
         createNotificationChannel()
+
+        if (BuildConfig.DEBUG) {
+            StrictMode.setVmPolicy(
+                VmPolicy.Builder()
+                    .detectLeakedSqlLiteObjects()
+                    .detectLeakedClosableObjects()
+                    .penaltyLog()
+                    .build()
+            )
+        }
     }
 
     private fun createNotificationChannel() {

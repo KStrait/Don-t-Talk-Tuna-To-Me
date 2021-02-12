@@ -42,7 +42,7 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun providesDownloadRepo(episodeDao: EpisodeDao): DownloadRepo{
-        return DownloadRepo(episodeDao)
+    fun providesDownloadRepo(context: Context, episodeDao: EpisodeDao): DownloadRepo{
+        return DownloadRepo(context, episodeDao)
     }
 }

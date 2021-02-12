@@ -10,6 +10,7 @@ import com.kylestrait.donttalktunatome.data.RSS
 import com.kylestrait.donttalktunatome.di.NetworkModule
 import com.kylestrait.donttalktunatome.manager.AudioManager
 import com.kylestrait.donttalktunatome.repo.DownloadRepo
+import com.kylestrait.donttalktunatome.widget.livedata.SingleLiveEvent
 import kotlinx.coroutines.*
 import retrofit2.Response
 import java.text.SimpleDateFormat
@@ -29,7 +30,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
     @Inject
     lateinit var downloadRepo: DownloadRepo
 
-    var mainFeed: MutableLiveData<Response<RSS>> = MutableLiveData()
+    var mainFeed: SingleLiveEvent<Response<RSS>> = SingleLiveEvent()
     var episode: MutableLiveData<Item> = MutableLiveData()
     var epTitle: String? = null
     var getIsPlaying: MutableLiveData<Boolean> = MutableLiveData()

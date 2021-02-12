@@ -81,10 +81,17 @@ class EpisodesFragment @Inject constructor() : BaseFragment<EpisodesViewModel>(E
 
         }
 
-        mMainViewModel?.mainFeed?.observe(viewLifecycleOwner, Observer {
-            mItems.addAll(it?.body()?.channel?.item!!)
-            mAdapter?.update(it.body()?.channel?.item!!)
+        mMainViewModel?.mainFeed?.observe(viewLifecycleOwner, Observer {items ->
+            mItems.addAll(items?.body()?.channel?.item!!)
+            mAdapter?.update(items.body()?.channel?.item!!)
             mAdapter?.notifyDataSetChanged()
+
+            Log.d(TAG, "MainFeed : " + items.body()?.channel?.item?.size)
+//            context?.let { con ->
+//                items.body()?.channel?.item?.get(10)?.let {
+//                    viewModel?.downloadFirstEpisode(it)
+//                }
+//            }
         })
     }
 
