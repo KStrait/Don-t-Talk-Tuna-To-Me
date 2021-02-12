@@ -78,14 +78,16 @@ class BottomPlayerFragment @Inject constructor(): BaseFragment<PlayerViewModel>(
         mEpisode = item
         mBinding?.item = mEpisode
 
-        mViewModel?.setAudioManager(activity!!, mEpisode)
-        exoPlayer = mAudioManager.getExoMediaPlayer()
-        val playerView = mBinding?.playerView
-        mAudioManager.setPlayerViewStuff(playerView)
-        playerView?.showTimeoutMs = 0
+        activity?.let {
+            mViewModel?.setAudioManager(it, mEpisode)
+            exoPlayer = mAudioManager.getExoMediaPlayer()
+            val playerView = mBinding?.playerView
+            mAudioManager.setPlayerViewStuff(playerView)
+            playerView?.showTimeoutMs = 0
 
-        playerNotificationManager.setPlayer(exoPlayer)
-        playerNotificationManager.setMediaSessionToken(mAudioManager.getExoSession().sessionToken)
+            playerNotificationManager.setPlayer(exoPlayer)
+            playerNotificationManager.setMediaSessionToken(mAudioManager.getExoSession().sessionToken)
+        }
     }
 
     override fun onResume() {

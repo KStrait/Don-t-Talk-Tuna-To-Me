@@ -45,9 +45,11 @@ class PlayerViewModel @Inject constructor() : BaseViewModel() {
         }
     }
 
-    fun setAudioManager(context: Context, item: Item?) {
-        mAudioManager.setupPlayer(context, item, checkIfDownloaded(item?.title?.replace("\\s".toRegex(), "")!!))
-        episodeTitle.value = item.title
+    fun setAudioManager(context: Context?, item: Item?) {
+        context?.let {
+            mAudioManager.setupPlayer(it, item, checkIfDownloaded(item?.title?.replace("\\s".toRegex(), "")!!))
+            episodeTitle.value = item.title
+        }
     }
 
     fun getImdbFeed(apiKey: String, movie: String) {

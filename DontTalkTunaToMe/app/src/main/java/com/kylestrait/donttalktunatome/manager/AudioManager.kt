@@ -8,7 +8,7 @@ import android.net.Uri
 import android.os.Environment
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.lifecycle.MutableLiveData
-import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.PlayerControlView
@@ -45,7 +45,9 @@ class AudioManager @Inject constructor() {
         isBuffering?.value = true
 
         if (exoPlayer == null) {
-            exoPlayer = ExoPlayer.Builder(context).setTrackSelector(DefaultTrackSelector(context)).build()
+            mContext?.let {
+                exoPlayer = SimpleExoPlayer.Builder(it).build()
+            }
 //            exoPlayer = ExoPlayerFactory.newSimpleInstance(
 //                DefaultRenderersFactory(mContext),
 //                DefaultTrackSelector(), DefaultLoadControl()

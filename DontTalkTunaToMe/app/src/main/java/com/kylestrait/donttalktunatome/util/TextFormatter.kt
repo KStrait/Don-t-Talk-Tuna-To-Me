@@ -15,7 +15,7 @@ class TextFormatter {
     fun stripChars(title: String): String {
         if (title.contains(":") && title.contains("(")) {
             return title.substringBefore(":")
-        } else if (title.contains("(")) {
+        } else if (title.contains("(") && title.contains(")")) {
             return title.substring(title.indexOf("(") + 1, title.indexOf(")"))
         } else if (title.contains(":")) {
             return title.substringBefore(":")
