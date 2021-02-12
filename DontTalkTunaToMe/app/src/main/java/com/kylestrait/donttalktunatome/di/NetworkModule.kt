@@ -38,7 +38,8 @@ class NetworkModule @Inject constructor() {
         httpClient.addNetworkInterceptor(logging)
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://donttalktuna.libsyn.com/")
+//            .baseUrl("https://donttalktuna.libsyn.com/")
+            .baseUrl("https://poddontlie.libsyn.com/")
             .addConverterFactory(SimpleXmlConverterFactory.create())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .build()

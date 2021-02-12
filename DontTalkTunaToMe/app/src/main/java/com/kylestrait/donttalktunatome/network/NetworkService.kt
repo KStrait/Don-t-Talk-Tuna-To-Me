@@ -8,6 +8,6 @@ import retrofit2.http.GET
 
 interface NetworkService {
 
-    @GET("donttalktuna")
+    @GET("rss")
     fun getMainFeed() : Deferred<Response<RSS>>
 }
